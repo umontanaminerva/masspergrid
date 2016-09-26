@@ -1,0 +1,108 @@
+sim_begin :
+Thu Aug  4 16:22:57 MDT 2016
+nit = 20
+fapnit = 1000
+shortfapt = 0
+nmass x nper = 7 x 7
+massrange = 3,30
+perrange = 50,400
+planet 1 completed at:
+Thu Aug  4 17:19:16 MDT 2016
+planet 2 completed at:
+Thu Aug  4 18:15:19 MDT 2016
+planet 3 completed at:
+Thu Aug  4 19:11:28 MDT 2016
+planet 4 completed at:
+Thu Aug  4 20:07:40 MDT 2016
+planet 5 completed at:
+Thu Aug  4 21:03:51 MDT 2016
+planet 6 completed at:
+Thu Aug  4 21:59:23 MDT 2016
+planet 7 completed at:
+Thu Aug  4 22:54:06 MDT 2016
+planet 8 completed at:
+Thu Aug  4 23:48:39 MDT 2016
+planet 9 completed at:
+Fri Aug  5 00:43:22 MDT 2016
+planet 10 completed at:
+Fri Aug  5 01:37:57 MDT 2016
+planet 11 completed at:
+Fri Aug  5 02:32:39 MDT 2016
+planet 12 completed at:
+Fri Aug  5 03:27:21 MDT 2016
+planet 13 completed at:
+Fri Aug  5 04:21:59 MDT 2016
+planet 14 completed at:
+Fri Aug  5 05:16:29 MDT 2016
+planet 15 completed at:
+Fri Aug  5 06:11:00 MDT 2016
+planet 16 completed at:
+Fri Aug  5 07:05:38 MDT 2016
+planet 17 completed at:
+Fri Aug  5 08:00:21 MDT 2016
+planet 18 completed at:
+Fri Aug  5 08:55:02 MDT 2016
+planet 19 completed at:
+Fri Aug  5 09:49:37 MDT 2016
+planet 20 completed at:
+Fri Aug  5 10:44:17 MDT 2016
+planet 21 completed at:
+Fri Aug  5 11:38:56 MDT 2016
+planet 22 completed at:
+Fri Aug  5 12:33:31 MDT 2016
+planet 23 completed at:
+Fri Aug  5 13:27:58 MDT 2016
+planet 24 completed at:
+Fri Aug  5 14:22:26 MDT 2016
+planet 25 completed at:
+Fri Aug  5 15:16:59 MDT 2016
+planet 26 completed at:
+Fri Aug  5 16:11:31 MDT 2016
+planet 27 completed at:
+Fri Aug  5 17:06:09 MDT 2016
+planet 28 completed at:
+Fri Aug  5 18:00:54 MDT 2016
+planet 29 completed at:
+Fri Aug  5 18:55:31 MDT 2016
+planet 30 completed at:
+Fri Aug  5 19:50:00 MDT 2016
+planet 31 completed at:
+Fri Aug  5 20:44:33 MDT 2016
+planet 32 completed at:
+Fri Aug  5 21:39:07 MDT 2016
+planet 33 completed at:
+Fri Aug  5 22:33:38 MDT 2016
+planet 34 completed at:
+Fri Aug  5 23:28:08 MDT 2016
+planet 35 completed at:
+Sat Aug  6 00:22:39 MDT 2016
+planet 36 completed at:
+Sat Aug  6 01:17:07 MDT 2016
+planet 37 completed at:
+Sat Aug  6 02:11:36 MDT 2016
+planet 38 completed at:
+Sat Aug  6 03:06:18 MDT 2016
+planet 39 completed at:
+Sat Aug  6 04:00:51 MDT 2016
+planet 40 completed at:
+Sat Aug  6 04:55:29 MDT 2016
+planet 41 completed at:
+Sat Aug  6 05:50:10 MDT 2016
+planet 42 completed at:
+Sat Aug  6 06:44:44 MDT 2016
+planet 43 completed at:
+Sat Aug  6 07:38:55 MDT 2016
+planet 44 completed at:
+Sat Aug  6 08:33:11 MDT 2016
+planet 45 completed at:
+Sat Aug  6 09:27:34 MDT 2016
+planet 46 completed at:
+Sat Aug  6 10:21:56 MDT 2016
+planet 47 completed at:
+Sat Aug  6 11:16:29 MDT 2016
+planet 48 completed at:
+Sat Aug  6 12:11:06 MDT 2016
+planet 49 completed at:
+Sat Aug  6 13:05:41 MDT 2016
+sim_end :
+Sat Aug  6 13:05:42 MDT 2016
