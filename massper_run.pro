@@ -8,7 +8,7 @@
 ;*******************************
 
 
-pro massper_run, subdir, ident, nit
+pro massper_run, subdir, ident, nit, fapnit
 
 old_sched = 0
 
@@ -17,10 +17,12 @@ old_sched = 0
 subdir = str(subdir)
 
 ;;;;;Define file paths.
-savepath = '~/Dropbox/UM_Minerva/code/sim_saves/massper_saves/' + subdir + '/'
-temppath='~/Desktop/'
+;savepath = '~/Dropbox/UM_Minerva/code/sim_saves/massper_saves/' + subdir + '/'
+;temppath='~/Desktop/'
 tempstr = 'simtemp'
 logfile = 'sim_info_' + str(ident) + '.txt'
+savepath = '/home/student/masspergrid/massper_saves/' + subdir + '/'
+temppath = '/home/student/'
 
 ;;;;;Begin sim timing.
 spawn, 'rm ' + savepath + logfile
@@ -48,7 +50,7 @@ msun = 1.989d30    ;;kg
 ;;;;;mass/period grid. 
 nmass = 7
 nper = 7
-fapnit = 1
+;fapnit = 1
 shortfap = 0
 maxfalse = 1.  ; percent
 massrange = [3,30]   ; MEarth
@@ -73,7 +75,7 @@ spawn, 'echo massrange = ' + str(massrange[0]) + ',' + str(massrange[1]) + $
 spawn, 'echo perrange = ' + str(perrange[0]) + ',' + str(perrange[1]) + $
        ' >> ' + savepath + logfile
 
-if old_sched eq 1 then begin    ;;;XX
+if old_sched eq 1 then begin    ;;;XXX
 ;;;;;Sam's scheduled obs times.  
 obsdir = '~/Dropbox/UM_Minerva/Scheduler/ThreeYearRuns/'
 obsfile = 'exp_cad_6_3.txt'
@@ -91,9 +93,10 @@ endif
 
 
 ;;Brute force for now
-readcol, '~/Dropbox/UM_Minerva/eta_Earth/schedsample/HD185144.jd.txt', obs_ts
-obs_ts = obs_ts - min(obs_ts)
-
+;readcol, '~/Dropbox/UM_Minerva/eta_Earth/schedsample/HD185144.jd.txt', obs_ts
+;readcol, '~/Dropbox/UM_Minerva/Scheduler/ThreeYearRuns/HD185144.exp_cad_6_3.txt', obs_ts
+readcol, '/home/student/masspergrid/HD185144.exp_cad_6_3jd.txt', obs_ts
+;obs_ts = obs_ts - min(obs_ts)  ; don't use this line! NM 9/27/16
 
 
 ;;;;;Build structures to be filled with planet info.
@@ -106,7 +109,7 @@ datablock = fltarr(n_elements(obs_ts), nplan, nit)
 
 
 ;;;;;Loop over planets.
-for m = 5,nmass-1 do begin
+for m = 0,nmass-1 do begin
    for p = 0,nper-1 do begin
 
       ind = nmass * m + p
@@ -131,8 +134,9 @@ for m = 5,nmass-1 do begin
          print,'Starting iteration '+str(i+1)+' of '+str(nit)  ; XXX
          
          ;;;;;Add noise to curve for sim data. 
-         ;noise_maker, obs_ts, noise
-         data = rv; + noise
+                                ;noise_maker, obs_ts, noise
+         noise = obs_ts*0. + randomn(seed,n_elements(obs_ts))
+         data = rv + noise
          datablock[*,ind, i] = data
 
          ;;;;;Fit the data with rv_lin.
