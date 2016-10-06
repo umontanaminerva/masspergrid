@@ -8,21 +8,27 @@
 ;*******************************
 
 
-pro massper_run, subdir, ident, nit, fapnit
+pro massper_run, subdir, ident, nit, fapnit;, min_elts
 
 old_sched = 0
+;cpu, tpool_min_elts = min_elts ;change minimum # of calculations
+;before multithreading occurs
 
+
+;;;;;Define root directory (for UM or Missouri State)
+rootdir = '~/Dropbox/UM_Minerva/'
+;rootdir = '/home/student/'
 
 ;;;;;Convert subdirectory name to string. 
 subdir = str(subdir)
 
 ;;;;;Define file paths.
-;savepath = '~/Dropbox/UM_Minerva/code/sim_saves/massper_saves/' + subdir + '/'
-;temppath='~/Desktop/'
+savepath = rootdir+'code/sim_saves/massper_saves/' + subdir + '/'
+temppath='~/Desktop/'
 tempstr = 'simtemp'
 logfile = 'sim_info_' + str(ident) + '.txt'
-savepath = '/home/student/masspergrid/massper_saves/' + subdir + '/'
-temppath = '/home/student/'
+;savepath = rootdir+'masspergrid/massper_saves/' + subdir + '/'
+;temppath = rootdir
 
 ;;;;;Begin sim timing.
 spawn, 'rm ' + savepath + logfile
@@ -77,7 +83,7 @@ spawn, 'echo perrange = ' + str(perrange[0]) + ',' + str(perrange[1]) + $
 
 if old_sched eq 1 then begin    ;;;XXX
 ;;;;;Sam's scheduled obs times.  
-obsdir = '~/Dropbox/UM_Minerva/Scheduler/ThreeYearRuns/'
+obsdir = rootdir+'Scheduler/ThreeYearRuns/'
 obsfile = 'exp_cad_6_3.txt'
 ;obsfile = 'three_obs.txt'
 offset = -43. / 24.   ;;;;diff between Samson and Chani's 
@@ -93,9 +99,9 @@ endif
 
 
 ;;Brute force for now
-;readcol, '~/Dropbox/UM_Minerva/eta_Earth/schedsample/HD185144.jd.txt', obs_ts
-;readcol, '~/Dropbox/UM_Minerva/Scheduler/ThreeYearRuns/HD185144.exp_cad_6_3.txt', obs_ts
-readcol, '/home/student/masspergrid/HD185144.exp_cad_6_3jd.txt', obs_ts
+;readcol, rootdir+'eta_Earth/schedsample/HD185144.jd.txt', obs_ts
+readcol, rootdir+'Scheduler/ThreeYearRuns/HD185144.exp_cad_6_3.txt', obs_ts
+;readcol, rootdir+'masspergrid/HD185144.exp_cad_6_3.txt', obs_ts
 ;obs_ts = obs_ts - min(obs_ts)  ; don't use this line! NM 9/27/16
 
 
@@ -134,8 +140,8 @@ for m = 0,nmass-1 do begin
          print,'Starting iteration '+str(i+1)+' of '+str(nit)  ; XXX
          
          ;;;;;Add noise to curve for sim data. 
-                                ;noise_maker, obs_ts, noise
-         noise = obs_ts*0. + randomn(seed,n_elements(obs_ts))
+         noise_maker, obs_ts, noise
+         ;noise = obs_ts*0. + randomn(seed,n_elements(obs_ts))
          data = rv + noise
          datablock[*,ind, i] = data
 
@@ -178,9 +184,12 @@ for m = 0,nmass-1 do begin
       ; log progress during a run
       spawn, 'echo planet '+str(ind+1)+' completed at:  >> ' + savepath + logfile
       spawn, 'date >> ' + savepath + logfile
-      stop 
-   endfor
-endfor
+
+      STOP
+
+   endfor  ; period loop
+
+endfor  ; mass loop
 
 ;;;;;Save final structure.
 save, planets, filename = savepath + 'massper_run_' + str(ident)+ '.sav'
