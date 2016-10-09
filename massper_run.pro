@@ -16,19 +16,19 @@ old_sched = 0
 
 
 ;;;;;Define root directory (for UM or Missouri State)
-rootdir = '~/Dropbox/UM_Minerva/'
-;rootdir = '/home/student/'
+;rootdir = '~/Dropbox/UM_Minerva/'
+rootdir = '/home/student/'
 
 ;;;;;Convert subdirectory name to string. 
 subdir = str(subdir)
 
 ;;;;;Define file paths.
-savepath = rootdir+'code/sim_saves/massper_saves/' + subdir + '/'
-temppath='~/Desktop/'
+;savepath = rootdir+'code/sim_saves/massper_saves/' + subdir + '/'
+;temppath='~/Desktop/'
 tempstr = 'simtemp'
 logfile = 'sim_info_' + str(ident) + '.txt'
-;savepath = rootdir+'masspergrid/massper_saves/' + subdir + '/'
-;temppath = rootdir
+savepath = rootdir+'masspergrid/massper_saves/' + subdir + '/'
+temppath = rootdir
 
 ;;;;;Begin sim timing.
 spawn, 'rm ' + savepath + logfile
@@ -99,11 +99,10 @@ endif
 
 
 ;;Brute force for now
-;readcol, rootdir+'eta_Earth/schedsample/HD185144.jd.txt', obs_ts
-readcol, rootdir+'Scheduler/ThreeYearRuns/HD185144.exp_cad_6_3.txt', obs_ts
-;readcol, rootdir+'masspergrid/HD185144.exp_cad_6_3.txt', obs_ts
-;obs_ts = obs_ts - min(obs_ts)  ; don't use this line! NM 9/27/16
-
+;readcol, rootdir+'eta_Earth/schedsample/HD185144.jd.txt', obs_ts, format='d'
+;readcol, rootdir+'Scheduler/ThreeYearRuns/HD185144.exp_cad_6_3.txt', obs_ts, format='d'
+readcol, rootdir+'masspergrid/HD185144.odd_multi.daynum.txt', obs_ts, format='d'
+;readcol, rootdir+ 'code/HD185144.daynum.txt', obs_ts, format='d'
 
 ;;;;;Build structures to be filled with planet info.
 planets = replicate({mass: 0d, per:0d, K:0d, per_found:0d, $
@@ -185,7 +184,7 @@ for m = 0,nmass-1 do begin
       spawn, 'echo planet '+str(ind+1)+' completed at:  >> ' + savepath + logfile
       spawn, 'date >> ' + savepath + logfile
 
-      STOP
+      ;STOP
 
    endfor  ; period loop
 
