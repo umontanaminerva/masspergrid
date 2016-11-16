@@ -39,6 +39,10 @@ tempstr = 'simtemp'
 logfile = 'sim_info_' + str(ident) + '.txt'
 datasave = savepath + 'datasave_'+ str(ident)+ '.sav'
 
+if keyword_set(suffix) then logfile = 'sim_info_' + str(ident) + suffix + '.txt' $
+else logfile = 'sim_info_' + str(ident) + '.txt'
+
+
 ;;;;;Begin sim timing.
 spawn, 'rm ' + savepath + logfile
 spawn, 'mkdir ' + savepath
