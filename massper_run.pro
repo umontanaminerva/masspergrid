@@ -5,30 +5,39 @@
 ;
 ; Wrapper code to run a simple mass/period grid of planets.
 ;
+; Deleted structure field per_found, as it is redundant and
+; did not update when combining datasets - NM 11/1/2016
+;
+; If /usenewdata is not set then a suffix is needed (i.e. suffix = 20161114)
 ;*******************************
 
 
-pro massper_run, subdir, ident, nit, fapnit;, min_elts
+pro massper_run, subdir, ident, nit, fapnit, suffix=suffix, usenewdata=usenewdata, msu=msu
 
+  
 old_sched = 0
 ;cpu, tpool_min_elts = min_elts ;change minimum # of calculations
 ;before multithreading occurs
-
-
-;;;;;Define root directory (for UM or Missouri State)
-;rootdir = '~/Dropbox/UM_Minerva/'
-rootdir = '/home/student/'
 
 ;;;;;Convert subdirectory name to string. 
 subdir = str(subdir)
 
 ;;;;;Define file paths.
-;savepath = rootdir+'code/sim_saves/massper_saves/' + subdir + '/'
-;temppath='~/Desktop/'
+;If massper_run is called with /msu, change filepaths to work on MSU computers
+if keyword_set(msu) then begin 
+   rootdir = '/home/student/'
+   savepath = rootdir+'masspergrid/massper_saves/' + subdir + '/'
+   temppath = rootdir
+;if /msu is not called, use filepaths for local machine
+endif else begin
+   rootdir = '~/Dropbox/UM_Minerva/'
+   savepath = rootdir+'code/sim_saves/massper_saves/' + subdir + '/'
+   temppath='~/Desktop/'
+endelse
+;stop
 tempstr = 'simtemp'
 logfile = 'sim_info_' + str(ident) + '.txt'
-savepath = rootdir+'masspergrid/massper_saves/' + subdir + '/'
-temppath = rootdir
+datasave = savepath + 'datasave_'+ str(ident)+ '.sav'
 
 ;;;;;Begin sim timing.
 spawn, 'rm ' + savepath + logfile
@@ -62,6 +71,8 @@ maxfalse = 1.  ; percent
 massrange = [3,30]   ; MEarth
 perrange = [50,400]  ; days  
 nplan = nmass * nper
+eccmax = 0.4 ;max eccentricity RVLIN is allowed to find
+permin = 1.2 ; min period RVLIN is allowed to find
 
 mass = 10 ^ (findgen(nmass) * (alog10(massrange[1]) - $
        alog10(massrange[0])) / float(nmass-1) + alog10(massrange[0]))
@@ -80,40 +91,45 @@ spawn, 'echo massrange = ' + str(massrange[0]) + ',' + str(massrange[1]) + $
        ' >> ' + savepath + logfile
 spawn, 'echo perrange = ' + str(perrange[0]) + ',' + str(perrange[1]) + $
        ' >> ' + savepath + logfile
+spawn, 'echo eccmax = ' + str(eccmax) + ' >> ' + savepath + logfile
+spawn, 'echo permin = ' + str(permin) + ' >> ' + savepath + logfile
 
-if old_sched eq 1 then begin    ;;;XXX
-;;;;;Sam's scheduled obs times.  
-obsdir = rootdir+'Scheduler/ThreeYearRuns/'
-obsfile = 'exp_cad_6_3.txt'
-;obsfile = 'three_obs.txt'
-offset = -43. / 24.   ;;;;diff between Samson and Chani's 
-feed1 =  "awk '($1=="
-feed2 = '"HD185144"'
-feed3 = "){print $6}' " + obsdir + obsfile + " > " + temppath + tempstr + $
-        '_0.txt'
-spawn, feed1 + feed2 + feed3
-readcol, temppath + tempstr + '_0.txt', obs_ts
-obs_ts = obs_ts + offset
+;Get observation times
+if keyword_set(usenewdata) then begin
+    if old_sched eq 1 then begin    ;;;XXX
+       ;;;;;Sam's scheduled obs times.  
+       obsdir = rootdir+'Scheduler/ThreeYearRuns/'
+       obsfile = 'exp_cad_6_3.txt'
+       ;obsfile = 'three_obs.txt'
+       offset = -43. / 24.   ;;;;diff between Samson and Chani's 
+       feed1 =  "awk '($1=="
+       feed2 = '"HD185144"'
+       feed3 = "){print $6}' " + obsdir + obsfile + " > " + temppath + tempstr + $
+               '_0.txt'
+       spawn, feed1 + feed2 + feed3
+       readcol, temppath + tempstr + '_0.txt', obs_ts
+       obs_ts = obs_ts + offset
 
-endif
+    endif
 
+    ;;Brute force for now
+    ;readcol, rootdir+'eta_Earth/schedsample/HD185144.jd.txt', obs_ts, format='d'
+    ;readcol, rootdir+'Scheduler/ThreeYearRuns/HD185144.exp_cad_6_3.txt', obs_ts, format='d'
+    ;readcol, rootdir+'masspergrid/HD185144.exp_cad_6_3.txt', obs_ts, format='d'
+    readcol, rootdir+ 'code/HD185144.daynum.txt', obs_ts, format='d'
 
-;;Brute force for now
-;readcol, rootdir+'eta_Earth/schedsample/HD185144.jd.txt', obs_ts, format='d'
-;readcol, rootdir+'Scheduler/ThreeYearRuns/HD185144.exp_cad_6_3.txt', obs_ts, format='d'
-readcol, rootdir+'masspergrid/HD185144.odd_multi.daynum.txt', obs_ts, format='d'
-;readcol, rootdir+ 'code/HD185144.daynum.txt', obs_ts, format='d'
+   datablock = fltarr(n_elements(obs_ts), nplan, nit) 
+endif else restore, datasave
+
 
 ;;;;;Build structures to be filled with planet info.
-planets = replicate({mass: 0d, per:0d, K:0d, per_found:0d, $
+planets = replicate({mass: 0d, per:0d, K:0d, $
                      fitK:fltarr(nit), fit_per:fltarr(nit), $
                      fit_ecc:fltarr(nit), found:intarr(nit), $
                      fapt:intarr(nit)}, nplan)
 
-datablock = fltarr(n_elements(obs_ts), nplan, nit)
 
-
-;;;;;Loop over planets.
+;;;;;Loop over planets. Load OR create data set and fit with RVLIN.
 for m = 0,nmass-1 do begin
    for p = 0,nper-1 do begin
 
@@ -123,42 +139,45 @@ for m = 0,nmass-1 do begin
       K = (2. * !pi * G / (per[p] * secprday))^(1./3) * mass[m] * mearth * $
           sin(inc*!dtor) / (mstar * msun + mass[m] * mearth)^(2./3) / sqrt(1 - ecc^2)
 
-      print, 'pl = ' + str(ind+1), ', mass = '+str(mass[m]), ', period = '+str(per[p]), ', K = '+str(K)
+      ;print, 'pl = ' + str(ind+1), ', mass = '+str(mass[m]), ', period = '+str(per[p]), ', K = '+str(K)
 
-      ;;;;;Create RV curve for planet.
-      rv = KeplerEq(mstar, mass[m], per[p], ecc, inc, arg, tper, time = obs_ts)
-
+      ;Create arrays to hold the RVLIN results
       found = intarr(nit)
       fitK = fltarr(nit)
       fit_per = fltarr(nit)
       fit_ecc = fltarr(nit)
       fap = intarr(nit)
       falserate = intarr(nit)
-
+      
+      ;;;;;Create RV curve for planet.
+      if keyword_set(usenewdata) then $
+      rv = KeplerEq(mstar, mass[m], per[p], ecc, inc, arg, tper, time = obs_ts) 
+      
       for i = 0,nit-1 do begin
-         print,'Starting iteration '+str(i+1)+' of '+str(nit)  ; XXX
+         ;print,'Starting iteration '+str(i+1)+' of '+str(nit)  ; XXX
          
          ;;;;;Add noise to curve for sim data. 
-         noise_maker, obs_ts, noise
-         ;noise = obs_ts*0. + randomn(seed,n_elements(obs_ts))
-         data = rv + noise
-         datablock[*,ind, i] = data
-
+         
+         if keyword_set(usenewdata) then begin
+            noise_maker, obs_ts, noise
+            datablock[*,ind,i] = rv + noise
+         endif
+         
          ;;;;;Fit the data with rv_lin.
-         err = 1.  ;;;m/s from MINERVA 
-         fit = rv_fit_mp(obs_ts, data, err, chi=chi, /quiet)
+         err = obs_ts*0 + 1.  ;;;m/s from MINERVA 
+         fit = rv_fit_mp(obs_ts, datablock[*,ind,i], err, chi=chi, ecc_max=eccmax, per_min = permin, /quiet)
          fitK[i] = fit[4]
          fit_per[i] = fit[0]
          fit_ecc[i] = fit[2]
 
          ;;;;;Check the fit with the fap test.
          if shortfap eq 0 then begin
-            falserate = fapt(fapnit, obs_ts, data, chi, err)
+            falserate = fapt(fapnit, obs_ts, datablock[*,ind,i], chi, err)
             if falserate lt maxfalse then found[i] = 1
          endif
          
          if shortfap ne 0 then begin
-            findfap = short_fapt(fapnit, obs_ts, data, chi, err, k, fit[4])
+            findfap = short_fapt(fapnit, obs_ts, datablock[*,ind,i], chi, err, k, fit[4])
             found[i] = findfap[0]
             fap[i] = findfap[1]
             falserate[i] = findfap[2]
@@ -166,14 +185,10 @@ for m = 0,nmass-1 do begin
 
       endfor
 
-      per_found = float(total(found)) / nit * 1d2
-
-
       ;;;;;Fill in structure info.
       planets[ind].mass = mass[m]
       planets[ind].per = per[p]
       planets[ind].K = K
-      planets[ind].per_found = per_found
       planets[ind].fitK = fitK
       planets[ind].fit_per = fit_per
       planets[ind].fit_ecc = fit_ecc
@@ -191,8 +206,11 @@ for m = 0,nmass-1 do begin
 endfor  ; mass loop
 
 ;;;;;Save final structure.
-save, planets, filename = savepath + 'massper_run_' + str(ident)+ '.sav'
-save, obs_ts, datablock, filename = savepath + 'datasave_'+ str(ident)+ '.sav' 
+
+if keyword_set(suffix) then save, planets, filename = savepath + 'massper_run_' + str(ident) + suffix + '.sav' $
+else save, planets, filename = savepath + 'massper_run_' + str(ident)  + '.sav'
+
+if keyword_set(usenewdata) then save, obs_ts, datablock, filename = datasave
 
 ;;;;;Remove temp file.
 spawn, 'rm ' + temppath + '*' + tempstr + '*' 
