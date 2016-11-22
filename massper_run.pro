@@ -12,13 +12,13 @@
 ;*******************************
 
 
-pro massper_run, subdir, ident, nit, fapnit, suffix=suffix, usenewdata=usenewdata, msu=msu
+pro massper_run, subdir, ident, nit, fapnit, star, targetlist, weighting, eccmax = eccmax, permin=permin, $
+                 suffix=suffix, usenewdata=usenewdata, msu=msu
 
+;Set default values 
+if not keyword_set(eccmax) then eccmax = 0.99
+if not keyword_set(permin) then permin = 0.01
   
-old_sched = 0
-;cpu, tpool_min_elts = min_elts ;change minimum # of calculations
-;before multithreading occurs
-
 ;;;;;Convert subdirectory name to string. 
 subdir = str(subdir)
 
@@ -38,6 +38,7 @@ endelse
 tempstr = 'simtemp'
 ;logfile = 'sim_info_' + str(ident) + '.txt'
 datasave = savepath + 'datasave_'+ str(ident)+ '.sav'
+schedule = str(star)+'.' + str(targetlist) + '_' + str(weighting) + '.daynum.txt'
 
 if keyword_set(suffix) then logfile = 'sim_info_' + str(ident) + suffix + '.txt' $
 else logfile = 'sim_info_' + str(ident) + '.txt'
@@ -51,7 +52,7 @@ spawn, 'date >> ' + savepath + logfile
 
 
 ;;;;;Define constant star and planet values.
-mstar = 0.87    ;;solar masses
+mstar = 0.87    ;;solar masses for HD185144
 inc = 90.    ;;degrees
 ecc = 0.
 arg = 0.
@@ -75,8 +76,6 @@ maxfalse = 1.  ; percent
 massrange = [3,30]   ; MEarth
 perrange = [50,400]  ; days  
 nplan = nmass * nper
-eccmax = 0.4 ;max eccentricity RVLIN is allowed to find
-permin = 1.2 ; min period RVLIN is allowed to find
 
 mass = 10 ^ (findgen(nmass) * (alog10(massrange[1]) - $
        alog10(massrange[0])) / float(nmass-1) + alog10(massrange[0]))
@@ -100,27 +99,9 @@ spawn, 'echo permin = ' + str(permin) + ' >> ' + savepath + logfile
 
 ;Get observation times
 if keyword_set(usenewdata) then begin
-    if old_sched eq 1 then begin    ;;;XXX
-       ;;;;;Sam's scheduled obs times.  
-       obsdir = rootdir+'Scheduler/ThreeYearRuns/'
-       obsfile = 'exp_cad_6_3.txt'
-       ;obsfile = 'three_obs.txt'
-       offset = -43. / 24.   ;;;;diff between Samson and Chani's 
-       feed1 =  "awk '($1=="
-       feed2 = '"HD185144"'
-       feed3 = "){print $6}' " + obsdir + obsfile + " > " + temppath + tempstr + $
-               '_0.txt'
-       spawn, feed1 + feed2 + feed3
-       readcol, temppath + tempstr + '_0.txt', obs_ts
-       obs_ts = obs_ts + offset
 
-    endif
-
-    ;;Brute force for now
-    ;readcol, rootdir+'eta_Earth/schedsample/HD185144.jd.txt', obs_ts, format='d'
-    ;readcol, rootdir+'Scheduler/ThreeYearRuns/HD185144.exp_cad_6_3.txt', obs_ts, format='d'
-    ;readcol, rootdir+'masspergrid/HD185144.exp_cad_6_3.txt', obs_ts, format='d'
-    readcol, rootdir+ 'code/HD185144.daynum.txt', obs_ts, format='d'
+   readcol, rootdir + 'masspergrid/' + schedule, obs_ts, format= 'd'
+   ;readcol, rootdir+'code/HD185144.daynum.txt', obs_ts, format='d' ; for local
 
    datablock = fltarr(n_elements(obs_ts), nplan, nit) 
 endif else restore, datasave
@@ -169,7 +150,7 @@ for m = 0,nmass-1 do begin
          
          ;;;;;Fit the data with rv_lin.
          err = obs_ts*0 + 1.  ;;;m/s from MINERVA 
-         fit = rv_fit_mp(obs_ts, datablock[*,ind,i], err, chi=chi, ecc_max=eccmax, per_min = permin, /quiet)
+         fit = rv_fit_mp(obs_ts, datablock[*,ind,i], err, chi=chi, eccmax=eccmax, permin = permin, /quiet)
          fitK[i] = fit[4]
          fit_per[i] = fit[0]
          fit_ecc[i] = fit[2]
