@@ -21,8 +21,9 @@ targetlist = 'random60'
 weighting = 'ha'
 eccmax = 0.4
 permin = 1.2
+start_iter = 0 ;process dependent
 
-massper_run, subdir, ident, nit, fapnit, star, targetlist, weighting, eccmax=eccmax, $
+massper_run, subdir, ident, nit, fapnit, star, targetlist, weighting, start_iter eccmax=eccmax, $
              permin=permin, suffix=suffix, msu=msu, usenewdata=usenewdata
 
 

@@ -12,13 +12,14 @@
 ;*******************************
 
 
-pro massper_run, subdir, ident, nit, fapnit, star, targetlist, weighting, eccmax = eccmax, permin=permin, $
+pro massper_run, subdir, ident, nit, fapnit, star, targetlist, weighting, start_iter, eccmax = eccmax, permin=permin, $
                  suffix=suffix, usenewdata=usenewdata, msu=msu
 
 ;Set default values 
 if not keyword_set(eccmax) then eccmax = 0.99
 if not keyword_set(permin) then permin = 0.01
-  
+if keyword_set(usenewdata) then start_iter = 0
+
 ;;;;;Convert subdirectory name to string. 
 subdir = str(subdir)
 
@@ -38,6 +39,7 @@ endelse
 tempstr = 'simtemp'
 ;logfile = 'sim_info_' + str(ident) + '.txt'
 datasave = savepath + 'datasave_'+ str(ident)+ '.sav'
+total_datasave = savepath + 'total_datasave_' +str(targetlist)+'_'+str(weighting)+'.sav'
 schedule = str(star)+'.' + str(targetlist) + '_' + str(weighting) + '.daynum.txt'
 
 if keyword_set(suffix) then logfile = 'sim_info_' + str(ident) + suffix + '.txt' $
@@ -104,7 +106,7 @@ if keyword_set(usenewdata) then begin
    ;readcol, rootdir+'code/HD185144.daynum.txt', obs_ts, format='d' ; for local
 
    datablock = fltarr(n_elements(obs_ts), nplan, nit) 
-endif else restore, datasave
+endif else restore, total_datasave
 
 
 ;;;;;Build structures to be filled with planet info.
@@ -138,7 +140,7 @@ for m = 0,nmass-1 do begin
       if keyword_set(usenewdata) then $
       rv = KeplerEq(mstar, mass[m], per[p], ecc, inc, arg, tper, time = obs_ts) 
       
-      for i = 0,nit-1 do begin
+      for i = start_iter, start_iter+nit-1 do begin ;for i = 0,nit-1 do begin 
          ;print,'Starting iteration '+str(i+1)+' of '+str(nit)  ; XXX
          
          ;;;;;Add noise to curve for sim data. 
