@@ -38,7 +38,7 @@ endelse
 ;stop
 tempstr = 'simtemp'
 ;logfile = 'sim_info_' + str(ident) + '.txt'
-datasave = savepath + 'datasave_'+ str(ident)+ '.sav'
+datasave = savepath + 'datasave_'+ str(ident)+str(suffix) '.sav'
 total_datasave = savepath + 'total_datasave_' +str(targetlist)+'_'+str(weighting)+'.sav'
 schedule = str(star)+'.' + str(targetlist) + '_' + str(weighting) + '.daynum.txt'
 
