@@ -36,6 +36,15 @@ endif else begin
    temppath='~/Desktop/'
 endelse
 ;stop
+
+
+
+;;;;;Begin sim timing.
+spawn, 'rm ' + savepath + logfile
+spawn, 'mkdir ' + savepath
+spawn, 'echo sim_begin : >> ' + savepath + logfile
+spawn, 'date >> ' + savepath + logfile
+
 tempstr = 'simtemp'
 ;logfile = 'sim_info_' + str(ident) + '.txt'
 datasave = savepath + 'datasave_'+ str(ident)+str(suffix) '.sav'
@@ -44,13 +53,6 @@ schedule = str(star)+'.' + str(targetlist) + '_' + str(weighting) + '.daynum.txt
 
 if keyword_set(suffix) then logfile = 'sim_info_' + str(ident) + suffix + '.txt' $
 else logfile = 'sim_info_' + str(ident) + '.txt'
-
-
-;;;;;Begin sim timing.
-spawn, 'rm ' + savepath + logfile
-spawn, 'mkdir ' + savepath
-spawn, 'echo sim_begin : >> ' + savepath + logfile
-spawn, 'date >> ' + savepath + logfile
 
 
 ;;;;;Define constant star and planet values.
