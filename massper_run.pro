@@ -39,6 +39,9 @@ endelse
 
 
 
+if keyword_set(suffix) then logfile = 'sim_info_' + str(ident) + suffix + '.txt' $
+else logfile = 'sim_info_' + str(ident) + '.txt'
+
 ;;;;;Begin sim timing.
 spawn, 'rm ' + savepath + logfile
 spawn, 'mkdir ' + savepath
@@ -47,12 +50,9 @@ spawn, 'date >> ' + savepath + logfile
 
 tempstr = 'simtemp'
 ;logfile = 'sim_info_' + str(ident) + '.txt'
-datasave = savepath + 'datasave_'+ str(ident)+str(suffix) +'.sav'
+datasave = savepath + 'datasave_'+ str(ident) + '_' + str(suffix) +'.sav'
 total_datasave = savepath + 'total_datasave_' +str(targetlist)+'_'+str(weighting)+'.sav'
 schedule = str(star)+'.' + str(targetlist) + '_' + str(weighting) + '.daynum.txt'
-
-if keyword_set(suffix) then logfile = 'sim_info_' + str(ident) + suffix + '.txt' $
-else logfile = 'sim_info_' + str(ident) + '.txt'
 
 
 ;;;;;Define constant star and planet values.
